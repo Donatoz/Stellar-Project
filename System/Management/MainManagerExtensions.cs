@@ -8,6 +8,7 @@ using Metozis.System.Meta.Movement;
 using Metozis.System.Meta.Templates.VFX;
 using Metozis.System.Physics.Movement;
 using Metozis.System.Reactive;
+using Metozis.System.Registry;
 using Metozis.System.Shapes;
 using Newtonsoft.Json;
 using Sirenix.OdinInspector;
@@ -197,7 +198,10 @@ namespace Metozis.System.Management
                     starOptions
                 }
             };
-
+            
+            var reader = new RegistryReader();
+            reader.Load(Global.PathVariables.MetozisRoot + "/Registry/Names/StarNames.rgm");
+            
             //var json = Serializer.SerializeObject(systemOptions);
             //OutputUtils.WriteFile(Application.dataPath + "/Tests/Generation/test.json", json);
             var system = ManagersRoot.Get<SpawnManager>().GenerateSystem(new Vector3(5,5, 5), systemOptions);

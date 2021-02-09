@@ -5,6 +5,7 @@ using System.Text;
 using Metozis.System.Entities;
 using Metozis.System.Extensions;
 using Metozis.System.Generators.Preprocessors;
+using Metozis.System.IO;
 using Metozis.System.Management;
 using Metozis.System.Stellar;
 using QuikGraph;
@@ -68,15 +69,14 @@ namespace Metozis.System.Generators.StellarGeneration
             galaxy.Visual.DrawEdges();
             
             // Stage 5 : Generate systems
-            
-            
+
+            var systemsNameRegister = InputUtils.ReadFile(Application.dataPath + "Registers/SystemNames.txt");
             
             return galaxy;
         }
 
-        private StellarSystemGenerationOptions GenerateSystem()
+        private StellarSystemGenerationOptions GenerateSystem(string name)
         {
-            var name = "";
 
             return null;
         }
