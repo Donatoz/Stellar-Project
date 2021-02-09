@@ -17,7 +17,13 @@ namespace Metozis.System.Meta.Templates
         public float BaseHabitability;
         [BoxGroup("Meta parameters")]
         public Vector3 MinimumSize = Vector3.one;
-        
+        [MinMaxSlider(0, 60)]
+        [Tooltip("Possible spawn distance from system root (AU).")]
+        [BoxGroup("Meta parameters")]
+        public Vector2 SpawnDistance;
+
+        #region Shader
+
         [BoxGroup("Shader settings")]
         public Texture2D BaseTexture;
         [BoxGroup("Shader settings")]
@@ -139,6 +145,9 @@ namespace Metozis.System.Meta.Templates
         public bool RenderRings;
         [BoxGroup("Render options")] 
         public bool RenderAtmosphere;
+
+        #endregion
+        
 
         public static PlanetTemplate GetRandomFromPreferences(Func<PlanetTemplate, bool> filter = null)
         {
