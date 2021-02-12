@@ -10,6 +10,8 @@ namespace Metozis.System.Management
         public Material OrbitMaterial;
         [ColorUsage(true, true)]
         public Color OrbitDefaultColor;
+        [ColorUsage(true, true)]
+        public Color RootBorderColor;
 
         public List<PlanetTemplate> PlanetTemplates;
         public List<StarTemplate> StarTemplates;

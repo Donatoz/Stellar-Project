@@ -1,4 +1,5 @@
-﻿using Metozis.System.Extensions.Copy;
+﻿using Metozis.System.Extensions;
+using Metozis.System.Extensions.Copy;
 using Metozis.System.Generators.EntityGeneration;
 using Metozis.System.Generators.StellarGeneration;
 using Metozis.System.Meta.Templates;
@@ -147,7 +148,7 @@ namespace Metozis.System.Management
                         AxisTransform = Vector3.one,
                         Eccentricity = 0.1f,
                         Inclination = 0.3f,
-                        EvaluationSpeed = 0.000005f,
+                        EvaluationSpeed = 0.0005f,
                         MeanLongitude = 1,
                         PeriapsisArgument = 0.5f,
                         Segments = 80,
@@ -170,14 +171,89 @@ namespace Metozis.System.Management
                 PhysicsSettings = new PhysicsSettings
                 {
                     Mass = 500,
-                    Temperature = 55000
+                    Temperature = 23000
                 },
                 PathToPrefab = "Star",
-                Radius = 1.4f,
+                MovementSettings = new ShapeMovementController
+                {
+                    ShapeType = new SerializableSystemType(typeof(OrbitalEllipse)),
+                    Arguments = new OrbitalEllipseSettings
+                    {
+                        AcendingNodeLongitude = 0.4f,
+                        AxisTransform = Vector3.one,
+                        Eccentricity = 0,
+                        Inclination = 0,
+                        EvaluationSpeed = 0.005f,
+                        MeanLongitude = 1,
+                        PeriapsisArgument = 0.5f,
+                        Segments = 80,
+                        SemiMajorAxis = 3f
+                    }
+                },
+                Radius = 0.7f,
                 AdditionalEffects =
                 {
                     testAsteroids
                 }
+            };
+            
+            var starOptions2 = new StarGenerationOptions
+            {
+                Name = "Some Star 2",
+                Guid = "",
+                PhysicsSettings = new PhysicsSettings
+                {
+                    Mass = 200,
+                    Temperature = 12000
+                },
+                MovementSettings = new ShapeMovementController
+                {
+                    ShapeType = new SerializableSystemType(typeof(OrbitalEllipse)),
+                    Arguments = new OrbitalEllipseSettings
+                    {
+                        AcendingNodeLongitude = 0.4f,
+                        AxisTransform = Vector3.one,
+                        Eccentricity = 0,
+                        Inclination = 0,
+                        EvaluationSpeed = 0.005f,
+                        MeanLongitude = 1,
+                        PeriapsisArgument = 0.5f,
+                        Segments = 80,
+                        SemiMajorAxis = 3f
+                    }
+                },
+                PathToPrefab = "Star",
+                Radius = 0.5f
+            };
+            
+            var starOptions3 = new StarGenerationOptions
+            {
+                Name = "Some Star 3",
+                Guid = "",
+                PhysicsSettings = new PhysicsSettings
+                {
+                    Mass = 200,
+                    Temperature = 12000
+                },
+                IgnoreRelativeGravity = true,
+                MovementSettings = new ShapeMovementController
+                {
+                    ShapeType = new SerializableSystemType(typeof(OrbitalEllipse)),
+                    Arguments = new OrbitalEllipseSettings
+                    {
+                        AcendingNodeLongitude = 0.4f,
+                        AxisTransform = 5f.UniformVector(),
+                        Eccentricity = 0,
+                        Inclination = 0,
+                        EvaluationSpeed = 0.00005f,
+                        MeanLongitude = 1,
+                        PeriapsisArgument = 0.5f,
+                        Segments = 80,
+                        SemiMajorAxis = 1
+                    }
+                },
+                PathToPrefab = "Star",
+                Radius = 0.2f
             };
 
             var systemOptions = new StellarSystemGenerationOptions
@@ -185,22 +261,23 @@ namespace Metozis.System.Management
                 Name = "Test System",
                 AdditionalDistanceFromRoot = 5,
                 Guid = "",
-                InitialSemiMajorAxis = 1,
+                InitialSemiMajorAxis = 3,
                 Members =
                 {
                     planetOptions,
                     planetOptions2
                 },
                 OrbitSpace = 2,
-                RootRelativeGravitation = false,
+                RootRelativeGravitation = true,
                 RootSystem =
                 {
-                    starOptions
+                    starOptions,
+                    starOptions2,
+                    starOptions3
                 }
             };
             
-            var reader = new RegistryReader();
-            reader.Load(Global.PathVariables.MetozisRoot + "/Registry/Names/StarNames.rgm");
+            
             
             //var json = Serializer.SerializeObject(systemOptions);
             //OutputUtils.WriteFile(Application.dataPath + "/Tests/Generation/test.json", json);

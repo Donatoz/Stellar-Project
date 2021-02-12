@@ -7,7 +7,7 @@ namespace Metozis.System.Stellar
 {
     public class GalaxyMapObject : Entity, ISelectable
     {
-        public readonly StellarSystemGenerationOptions GenerationOptions;
+        public StellarSystemGenerationOptions GenerationOptions;
         
         protected override void InitializeModules()
         {

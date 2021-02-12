@@ -23,6 +23,7 @@ namespace Metozis.System.Generators.EntityGeneration
         public float DistanceFromRoot = 1;
         public float Radius = 1;
         public List<EffectTemplate> AdditionalEffects = new List<EffectTemplate>();
+        public bool IgnoreRelativeGravity;
         public PhysicsSettings PhysicsSettings
         {
             get => physics;

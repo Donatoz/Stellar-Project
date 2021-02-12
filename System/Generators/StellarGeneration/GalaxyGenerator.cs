@@ -7,6 +7,7 @@ using Metozis.System.Extensions;
 using Metozis.System.Generators.Preprocessors;
 using Metozis.System.IO;
 using Metozis.System.Management;
+using Metozis.System.Registry;
 using Metozis.System.Stellar;
 using QuikGraph;
 using QuikGraph.Algorithms;
@@ -70,14 +71,21 @@ namespace Metozis.System.Generators.StellarGeneration
             
             // Stage 5 : Generate systems
 
-            var systemsNameRegister = InputUtils.ReadFile(Application.dataPath + "Registers/SystemNames.txt");
+            var reader = new RegistryReader();
+            reader.Load(Global.PathVariables.MetozisRoot + "/Registry/Names/StarNames.rgm");
+
+            foreach (var stellar in stellars)
+            {
+                stellar.GetComponent<GalaxyMapObject>().GenerationOptions = GenerateSystem(reader.Get());
+            }
             
             return galaxy;
         }
 
         private StellarSystemGenerationOptions GenerateSystem(string name)
         {
-
+            var options = new StellarSystemGenerationOptions();
+            options.Name = name;
             return null;
         }
 

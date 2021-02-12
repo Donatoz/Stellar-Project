@@ -24,7 +24,7 @@ namespace Metozis.System.Shapes
                 float eccentricAnomaly = i * orbitFraction * (float)Constants.Tau;
                 var trueAnomalyConst = Mathf.Sqrt((1 + Arguments.Eccentricity) / (1 - Arguments.Eccentricity));
                 var trueAnomaly = 2 * Mathf.Atan(trueAnomalyConst * Mathf.Tan(eccentricAnomaly / 2));
-                var distance = Arguments.SemiMajorAxis * (1 - Arguments.Eccentricity * Mathf.Cos(eccentricAnomaly));
+                var distance = Arguments.SemiMajorAxis * (1 - Arguments.Eccentricity * Mathf.Cos(eccentricAnomaly)) + Arguments.AdditionalVisualRadius;
                 
                 var cosAOPPlusA = Mathf.Cos(Arguments.PeriapsisArgument + trueAnomaly);
                 var sinAOPPlusA = Mathf.Sin(Arguments.PeriapsisArgument + trueAnomaly);
@@ -59,7 +59,7 @@ namespace Metozis.System.Shapes
             
             var mu = Constants.G * Arguments.EvaluationSpeed;
             var n = Mathf.Sqrt((float)mu / Mathf.Pow(Arguments.SemiMajorAxis, 3));
-            var meanAnomaly = n * (t - Arguments.MeanLongitude);
+            var meanAnomaly = n * (t - Arguments.MeanLongitude) + (Arguments.EvaluationProgress * 6);
 
             var diff = 1f;
             var E1 = meanAnomaly;

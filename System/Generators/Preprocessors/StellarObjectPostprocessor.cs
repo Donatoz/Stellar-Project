@@ -13,7 +13,8 @@ namespace Metozis.System.Generators.Preprocessors
         {
             if(!(options is StellarBodyGenerationOptions)) return;
             var genOptions = options as StellarBodyGenerationOptions;
-            var effectsRoot = entity.transform.Find("Effects");
+            var effectsRoot = new GameObject("WorldEffects").transform;
+            effectsRoot.parent = entity.transform;
 
             foreach (var effect in genOptions.AdditionalEffects)
             {
@@ -22,6 +23,10 @@ namespace Metozis.System.Generators.Preprocessors
                     .InstantiateObject(templ, Vector3.zero, Quaternion.Euler(effect.Rotation)).GetComponent<VisualEffect>();
                 eff.transform.parent = effectsRoot;
                 eff.transform.localPosition = effect.LocalPosition;
+                if (effect.Deattachable)
+                {
+                    eff.name += "_world";
+                }
                 effect.Apply(eff);
             }
         }

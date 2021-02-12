@@ -8,5 +8,9 @@ namespace Metozis.System.Meta.Movement
     {
         public Vector3 AxisTransform = Vector3.one;
         public float EvaluationSpeed = 1;
+        [Range(0, 1)]
+        public float EvaluationProgress;
+
+        public float AdditionalVisualRadius;
     }
 }

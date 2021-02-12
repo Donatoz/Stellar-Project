@@ -6,10 +6,13 @@ using Metozis.System.Generators.EntityGeneration;
 using Metozis.System.Generators.Preprocessors;
 using Metozis.System.Management;
 using Metozis.System.Meta.Movement;
+using Metozis.System.Physics;
 using Metozis.System.Physics.Movement;
+using Metozis.System.Shapes;
 using Metozis.System.Stellar;
 using Metozis.System.VFX;
 using Shapes;
+using Sirenix.Utilities;
 using UnityEngine;
 
 namespace Metozis.System.Generators.StellarGeneration
@@ -25,6 +28,8 @@ namespace Metozis.System.Generators.StellarGeneration
             // Stage 1 : Generate system root
             
             var rootTransform = new GameObject(options.Name).transform;
+            var effectsRoot = new GameObject("Effects");
+            effectsRoot.transform.parent = rootTransform;
             var system = ManagersRoot.Get<SpawnManager>()
                 .InstantiateObject(template, Vector3.zero, Quaternion.identity).GetComponent<StellarSystem>();
             var root = GenerateRoot(genOptions);
@@ -122,31 +127,76 @@ namespace Metozis.System.Generators.StellarGeneration
             StellarSystemGenerationOptions options,
             out float rootSize)
         {
-            rootSize = 0;
+            rootSize = options.InitialSemiMajorAxis;
             if (rootObjects.Length == 1)
             {
                 rootSize += rootObjects[0].Radius.Value + options.AdditionalDistanceFromRoot;
                 rootObjects[0].transform.parent = systemRoot;
                 return;
             }
-            var semiMajorAxis = options.InitialSemiMajorAxis;
-            var orbitSpace = options.OrbitSpace;
-            for (int i = 0; i < rootObjects.Length; i++)
-            {
-                var movement = rootObjects[i].AddModule(new MovementModule(rootObjects[i])) as MovementModule;
-                movement.Settings.Value = rootObjects[i].Meta.MovementSettings;
-                ((ShapeSettings) movement.Settings.Value.Arguments).AxisTransform = semiMajorAxis.UniformVector();
-                rootObjects[i].transform.parent = systemRoot;
-                rootSize += rootObjects[i].Radius.Value;
+            
+            var ignored = rootObjects.Where(o => o.Meta.IgnoreRelativeGravity).ToArray();
+            var actual = rootObjects.Where(o => !o.Meta.IgnoreRelativeGravity).ToArray();
+            var currentMaxSize = 0f;
 
-                if (i < rootObjects.Length - 1)
+            for (int i = options.RootRelativeGravitation ? 0 : 1; i < actual.Length; i++)
+            {
+                var movement = SetUpMovement(actual[i], systemRoot);
+                movement.Settings.Value.ChangePathVisual(default, Temperature.GetTemperatureColor(actual[i].Physics.Temperature.Value).LerpToBlack(0.7f).LerpToWhite(0.1f).Alpha(0.4f));
+                
+                if (options.RootRelativeGravitation)
                 {
-                    semiMajorAxis += orbitSpace + rootObjects[i].Radius.Value + rootObjects[i + 1].Radius.Value;
-                    rootSize += orbitSpace + rootObjects[i + 1].Radius.Value;
+                    var progress = (float)i / (float)actual.Length;
+                    var settings = (ShapeSettings) movement.Settings.Value.Arguments;
+                    settings.EvaluationProgress = progress;
+                    settings.AdditionalVisualRadius = 0.1f * i;
                 }
+                else
+                {
+                    rootSize += actual[i].Radius.Value +
+                                ((ShapeSettings) actual[i].Meta.MovementSettings.Arguments).AxisTransform.x;
+                }
+
+                foreach (Transform effect in actual[i].transform.Find("WorldEffects"))
+                {
+                    effect.transform.parent = systemRoot.Find("Effects").transform;
+                    effect.transform.localPosition = Vector3.zero;
+                }
+
+                currentMaxSize = Mathf.Max(actual[i].Radius.Value, currentMaxSize);
+                actual[i].transform.parent = systemRoot;
             }
 
+            if (options.RootRelativeGravitation)
+            {
+                rootSize += currentMaxSize;
+            }
+
+            for (var i = 0; i < ignored.Length; i++)
+            {
+                var movement = SetUpMovement(ignored[i], systemRoot);
+                movement.Settings.Value.ChangePathVisual(default, Temperature.GetTemperatureColor(ignored[i].Physics.Temperature.Value).LerpToBlack(0.7f).LerpToWhite(0.1f).Alpha(0.4f));
+
+                var diff = ((ShapeSettings) ignored[i].Meta.MovementSettings.Arguments).AxisTransform.x - rootSize;
+                rootSize += ignored[i].Radius.Value + diff;
+                ignored[i].transform.parent = systemRoot;
+            }
+            
             rootSize += options.AdditionalDistanceFromRoot;
+            
+            var rootBorder = ShapeUtils.DrawEllipse(rootSize, rootSize, systemRoot.position);
+            rootBorder.name = "Root border";
+            rootBorder.transform.parent = systemRoot;
+            rootBorder.Renderer.Width.Value = 0.1f;
+            rootBorder.Renderer.Color.Value = ManagersRoot.Get<Preferences>().RootBorderColor;
+        }
+
+        private MovementModule SetUpMovement(StellarObject o, Transform center)
+        {
+            var movement = o.AddModule(new MovementModule(o)) as MovementModule;
+            movement.Settings.Value = o.Meta.MovementSettings;
+            movement.Settings.Value.SetCenter(center);
+            return movement;
         }
 
         private void SetUpCommonGravity(StellarObject obj, 
@@ -160,10 +210,7 @@ namespace Metozis.System.Generators.StellarGeneration
             
             if (obj.Meta.MovementSettings != null)
             {
-                var movement = obj.AddModule(new MovementModule(obj)) as MovementModule;
-
-                movement.Settings.Value = obj.Meta.MovementSettings;
-                movement.Settings.Value.SetCenter(currentRoot);
+                var movement = SetUpMovement(obj, currentRoot);
                 movement.Settings.Value.ChangePathVisual(obj.Radius.Value / 15, default);
 
                 ((ShapeSettings) movement.Settings.Value.Arguments).AxisTransform =
@@ -178,7 +225,7 @@ namespace Metozis.System.Generators.StellarGeneration
 
         private void SetUpLight(IEnumerable<StellarObject> members, GameObject light)
         {
-            members.OfType<ILightReceiver>().ForEach(m => m.SetLightPoint(light));
+            ShapesExtensions.ForEach(members.OfType<ILightReceiver>(), m => m.SetLightPoint(light));
         }
     }
 }

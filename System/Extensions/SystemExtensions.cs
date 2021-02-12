@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -13,9 +14,10 @@ namespace Metozis.System.Extensions
             return new Vector3(f,f,f);
         }
 
-        public static T PickRandom<T>(this List<T> list)
+        public static T PickRandom<T>(this IEnumerable<T> coll)
         {
-            return list[Random.Range(0, list.Count)];
+            var enumerable = coll as T[] ?? coll.ToArray();
+            return enumerable.ToList()[Random.Range(0, enumerable.Length)];
         }
 
         public static void Print<T>(this IEnumerable<T> collection, string prefix = "")

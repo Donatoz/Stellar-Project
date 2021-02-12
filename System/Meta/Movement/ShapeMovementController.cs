@@ -80,7 +80,10 @@ namespace Metozis.System.Meta.Movement
 
         public void ChangePathVisual(float width, Color color)
         {
-            shape.Renderer.Width.Value = width;
+            if (width != default)
+            {
+                shape.Renderer.Width.Value = width;
+            }
             if (color != default)
             {
                 shape.Renderer.Color.Value = color;

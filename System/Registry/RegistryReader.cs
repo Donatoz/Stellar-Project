@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Metozis.System.Extensions;
 using Metozis.System.IO;
 using Shapes;
 using Sirenix.Utilities;
@@ -105,7 +106,7 @@ namespace Metozis.System.Registry
                 if (line.Trim().Length == 0) continue;
                 
                 var tempResults = new List<string>();
-                bool passLine = false;
+                var passLine = false;
                 foreach (var rule in selectiveFunction.Invoke(line))
                 {
                     if (rule.Validate(line) && rule.Pass)
@@ -164,7 +165,9 @@ namespace Metozis.System.Registry
 
         public string Get()
         {
-            return null;
+            var item = data.PickRandom();
+            data.Remove(item);
+            return item;
         }
     }
 }
