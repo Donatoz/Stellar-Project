@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Metozis.System.Entities
 {
@@ -12,6 +13,12 @@ namespace Metozis.System.Entities
             var guid = Guid.NewGuid().ToString();
             entities[guid] = e;
             return guid;
+        }
+        
+        [CanBeNull]
+        public static Entity GetById(string id)
+        {
+            return entities[id];
         }
     }
 }
