@@ -68,7 +68,7 @@ namespace Metozis.System.Entities
 
         protected void OnDestroy()
         {
-            
+            EntityManager.UnregisterEntity(Guid);
         }
 
         /// <summary>
