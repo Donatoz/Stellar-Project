@@ -14,6 +14,11 @@ namespace Metozis.System.Entities
             entities[guid] = e;
             return guid;
         }
+
+        public static void UnregisterEntity(string id)
+        {
+            entities.Remove(id);
+        }
         
         [CanBeNull]
         public static Entity GetById(string id)

@@ -66,6 +66,11 @@ namespace Metozis.System.Entities
             }
         }
 
+        protected void OnDestroy()
+        {
+            
+        }
+
         /// <summary>
         /// Initialize all necessary modules.
         /// </summary>
