@@ -12,6 +12,10 @@ namespace Metozis.System.Meta.Templates.VFX
         public Vector3 LocalPosition;
         [BoxGroup("Effect settings")]
         public Vector3 Rotation;
+        [BoxGroup("Effect settings")]
+        public float AdditionalRootSize;
+        [BoxGroup("Effect settings")]
+        public bool Deattachable;
         public abstract void Apply(VisualEffect effect);
     }
 }
