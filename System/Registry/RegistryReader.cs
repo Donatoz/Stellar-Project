@@ -8,6 +8,7 @@ using Metozis.System.IO;
 using Shapes;
 using Sirenix.Utilities;
 using UnityEngine;
+using Metozis.Scripting.Processing;
 using Random = UnityEngine.Random;
 
 namespace Metozis.System.Registry
@@ -17,7 +18,7 @@ namespace Metozis.System.Registry
         private HashSet<string> data = new HashSet<string>();
         private Func<string, RegistryRule[]> selectiveFunction;
 
-        private readonly List<RegistryRule> rules = new List<RegistryRule>
+        private List<RegistryRule> rules = new List<RegistryRule>
         {
             // Registry start/end
             new RegistryRule
@@ -71,14 +72,14 @@ namespace Metozis.System.Registry
             },
             // Namespace start rule
             new RegistryRule
-            {
-                Validation = line => line.StartsWith("{"),
-                Aggregate = true,
-                Aggregator = new RuleAggregator
+            (new LineAggregator
                 {
                     StopSymbol = "}",
                     SubAggregation = line => line.Replace(",", "").Trim()
                 }
+            )
+            {
+                Validation = line => line.StartsWith("{")
             }
         };
 
@@ -115,11 +116,12 @@ namespace Metozis.System.Registry
                         break;
                     }
 
-                    if (rule.Aggregator != null && rule.Aggregate)
+                    if (rule.Injection.IsInjected<LineAggregator>())
                     {
                         if (!rule.Validate(line)) continue;
-                        var results = rule.Aggregator
-                            .Aggregate(lines.ToArray(), i + 1);
+                        rule.Injection.ForceCall<LineAggregator>(lines.ToArray(), i + 1);
+                        var results = rule.Injection.GetState<LineAggregator, IReadOnlyList<string>>();
+                        Debug.Log(results.Count);
                         tempResults.AddRange(results);
                         i += results.Count + 1;
                     }
@@ -128,7 +130,7 @@ namespace Metozis.System.Registry
                         var evaluationResults = rule.Evaluate(line);
                         if (evaluationResults != null)
                         {
-                            tempResults.AddRange(evaluationResults);
+                            tempResults.AddRange(evaluationResults.Cast<string>());
                         }
                     }
                 }
