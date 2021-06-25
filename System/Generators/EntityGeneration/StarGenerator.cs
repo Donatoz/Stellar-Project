@@ -12,7 +12,7 @@ namespace Metozis.System.Generators.EntityGeneration
         public override Entity Generate(GenerationOptions options, IGeneratorPostprocessor postprocessor = null)
         {
             if (!Validate<StarGenerationOptions>(options)) return null;
-            var genOptions = options as StarGenerationOptions;
+            var genOptions = (StellarBodyGenerationOptions) options;
 
             var newStar = ManagersRoot.Get<SpawnManager>()
                 .InstantiateObject(template, Vector3.zero, Quaternion.identity).GetComponent<Star>();

@@ -8,7 +8,7 @@ namespace Metozis.Scripting.Injecting
 {
     public class InjectionBatcher
     {
-        public readonly HashSet<IRuleInjective> injectives = new HashSet<IRuleInjective>();
+        private readonly HashSet<IRuleInjective> injectives = new HashSet<IRuleInjective>();
         private readonly ScriptRule rule;
         private readonly Dictionary<Type, object> injectivesStates = new Dictionary<Type, object>();
 
@@ -25,7 +25,6 @@ namespace Metozis.Scripting.Injecting
         public bool IsInjected<T>() where T : IRuleInjective
         {
             var result =  injectives.Any(i => i.GetType() == typeof(T));
-            Debug.Log($"Injection check: {typeof(T)} = {result}");
             return result;
         }
 
@@ -36,6 +35,11 @@ namespace Metozis.Scripting.Injecting
             {
                 injectivesStates[typeof(T)] = injective.ForceInjectionContext(args);
             }
+        }
+
+        public Dictionary<string, Func<object[], object>> Expose<T>()
+        {
+            return injectives.Where(i => i.GetType() == typeof(T)).First().ExposedMethods;
         }
         
         public TRet GetState<TInj, TRet>() where TInj : IRuleInjective

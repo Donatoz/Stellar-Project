@@ -31,4 +31,12 @@ namespace Metozis.System.Extensions
             Debug.Log(builder.ToString());
         }
     }
+
+    public static class ExceptionAggregator
+    {
+        public static bool Among(Exception e, params Type[] expectedTypes)
+        {
+            return expectedTypes.Any(t => t == e.GetType());
+        }
+    }
 }

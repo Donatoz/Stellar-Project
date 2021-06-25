@@ -10,11 +10,10 @@ namespace Metozis.System.Generators.EntityGeneration
     [Serializable]
     public class StellarBodyGenerationOptions : GenerationOptions, ISealedStellarBodyGenerationOptions
     {
-        [SerializeField, HideInInspector]
+        [SerializeField]
         private PhysicsSettings physics;
         
-        
-        public IMovementController MovementSettings;
+        public ShapeMovementController MovementSettings;
         /// <summary>
         /// Must be located in Resources/Templates
         /// </summary>
@@ -24,6 +23,7 @@ namespace Metozis.System.Generators.EntityGeneration
         public float Radius = 1;
         public List<EffectTemplate> AdditionalEffects = new List<EffectTemplate>();
         public bool IgnoreRelativeGravity;
+        
         public PhysicsSettings PhysicsSettings
         {
             get => physics;

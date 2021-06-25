@@ -23,7 +23,8 @@ namespace Metozis.Scripting.Processing
 
             return cache;
         }
-        
+        public Dictionary<string, Func<object[], object>> ExposedMethods => null;
+
         public object ForceInjectionContext(params object[] args)
         {
             try
@@ -31,7 +32,7 @@ namespace Metozis.Scripting.Processing
                 var result = Aggregate((string[]) args[0], (int) args[1]);
                 return result;
             }
-            catch (InvalidCastException)
+            catch (Exception e) when (e is IndexOutOfRangeException || e is InvalidCastException)
             {
                 return null;
             }

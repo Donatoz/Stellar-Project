@@ -18,6 +18,11 @@ namespace Metozis.System.Physics.Movement
         {
             Settings.OnValueChanged = newSettings =>
             {
+                if (newSettings == null)
+                {
+                    Debug.LogWarning("Settings are null");
+                    return;
+                }
                 newSettings.DrawPath();
             };
         }
@@ -29,7 +34,7 @@ namespace Metozis.System.Physics.Movement
 
         public void FixedUpdate()
         {
-            if (!Enabled || Settings == null) return;
+            if (!Enabled || Settings.Value == null || Target == null) return;
             Settings.Value.SetCenter(Target.transform.parent);
             Move();
         }

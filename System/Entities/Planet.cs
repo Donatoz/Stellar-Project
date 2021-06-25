@@ -43,6 +43,10 @@ namespace Metozis.System.Entities
         public void ApplyTemplate(Template template)
         {
             if (!(template is PlanetTemplate)) return;
+            if (bodyRenderer == null)
+            {
+                bodyRenderer = transform.Find("Body").GetComponent<MeshRenderer>();
+            }
             var planetTemplate = (PlanetTemplate) template;
             
             bodyRenderer.material.SetTexture("_ColorTexture", planetTemplate.BaseTexture);
@@ -73,13 +77,36 @@ namespace Metozis.System.Entities
             bodyRenderer.material.SetFloat("_ShadowsXOffset", planetTemplate.CloudsShadowOffset.x);
             bodyRenderer.material.SetFloat("_ShadowsYOffset", planetTemplate.CloudsShadowOffset.y);
             bodyRenderer.material.SetFloat("_ShadowsSharpness", planetTemplate.CloudsShadowSharpness);
-            
+            bodyRenderer.material.SetTexture("_CloudsDistortionTexture", planetTemplate.CloudDistortionTexture);
+            bodyRenderer.material.SetFloat("_CloudDistortionSpeed", planetTemplate.CloudDistortionSpeed);
+            bodyRenderer.material.SetFloat("_CloudDistortionAmount", planetTemplate.CloudDistortionAmount);
+
             bodyRenderer.material.SetColor("_Citiescolor", planetTemplate.CitiesColor);
             bodyRenderer.material.SetFloat("_CitiesDetail", planetTemplate.CitiesDetails);
+            bodyRenderer.material.SetVector("_CitiesAlphaMinMax", planetTemplate.CitiesAlphaMinMax);
+            bodyRenderer.material.SetVector("_CitiesAlphaTiling", planetTemplate.CitiesAlphaTiling);
+            bodyRenderer.material.SetTexture("_CitiesMask", planetTemplate.CitiesMask);
+            bodyRenderer.material.SetVector("_CitiesMaskMinMax", planetTemplate.CitiesMaskMinMax);
+            bodyRenderer.material.SetVector("_CitiesMaskTiling", planetTemplate.CitiesMaskTiling);
             
             bodyRenderer.material.SetTexture("_NecessaryWaterMask", planetTemplate.WaterMask);
             bodyRenderer.material.SetColor("_WaterColor", planetTemplate.WaterColor);
             bodyRenderer.material.SetFloat("_SpecularIntensity", planetTemplate.WaterSpecularIntensity);
+            
+            bodyRenderer.material.SetTexture("_MagmaTexture", planetTemplate.MagmaTexture);
+            bodyRenderer.material.SetTexture("_MagmaDistortion", planetTemplate.MagmaDistortion);
+            bodyRenderer.material.SetVector("_MagmaDistortionSpeed", planetTemplate.MagmaDistortionSpeed);
+            bodyRenderer.material.SetFloat("_MagmaDistortionAmount", planetTemplate.MagmaDistortionAmount);
+            bodyRenderer.material.SetTexture("_MagmaMask", planetTemplate.MagmaMask);
+            bodyRenderer.material.SetVector("_MagmaMaskMinMax", planetTemplate.MagmaMaskMinMax);
+            bodyRenderer.material.SetVector("_MagmaMaskTiling", planetTemplate.MagmaMaskTiling);
+            bodyRenderer.material.SetColor("_MagmaBgColor", planetTemplate.MagmaBgColor);
+            
+            bodyRenderer.material.SetFloat("_DissolveNoiseScale", planetTemplate.DissolveNoiseScale);
+            bodyRenderer.material.SetFloat("_DissolveNoiseStrength", planetTemplate.DissolveNoiseStrength);
+            bodyRenderer.material.SetFloat("_DissolveEdgeWidth", planetTemplate.DissolveEdgeWidth);
+            bodyRenderer.material.SetColor("_DissolveColor", planetTemplate.DissolveColor);
+            bodyRenderer.material.SetFloat("_DissolveProgress", planetTemplate.DissolveProgress);
             
             outerAtmosRenderer.material.SetColor("_AtmosphereColor", planetTemplate.OuterAtmosphereColor);
             outerAtmosRenderer.material.SetFloat("_ExteriorSize", planetTemplate.ExteriorSize);

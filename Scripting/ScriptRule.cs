@@ -8,7 +8,6 @@ namespace Metozis.Scripting
     {
         public Predicate<string> Validation;
         public Func<string, IEnumerable<object>> Evaluation;
-
         public readonly InjectionBatcher Injection;
 
         public Action OnEvaluated;

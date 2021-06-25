@@ -18,7 +18,7 @@ namespace Metozis.System.Generators
 
         protected virtual bool Validate<T>(GenerationOptions options) where T : GenerationOptions
         {
-            return template != null && options.GetType() == typeof(T);
+            return template != null;
         }
 
         public abstract Entity Generate(GenerationOptions options, IGeneratorPostprocessor postprocessor = null);

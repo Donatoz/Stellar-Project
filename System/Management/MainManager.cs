@@ -12,6 +12,7 @@ namespace Metozis.System.Management
         public List<Galaxy> Galaxies = new List<Galaxy>();
         public Transform WorldCenter;
         
+        
         partial void Debug();
         
         private void Start()

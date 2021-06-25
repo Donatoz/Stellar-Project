@@ -72,7 +72,7 @@ namespace Metozis.System.Generators.StellarGeneration
             // Stage 5 : Generate systems
 
             var reader = new RegistryReader();
-            reader.Load(Global.PathVariables.MetozisRoot + "/Registry/Names/StarNames.rgm");
+            reader.Read(Global.PathVariables.MetozisRoot + "/Registry/Names/StarNames.rgm");
 
             foreach (var stellar in stellars)
             {

@@ -1,17 +1,15 @@
-﻿using Metozis.System.Extensions;
+﻿using System.Linq;
+using Metozis.Scripting.MScript;
+using Metozis.System.Extensions;
 using Metozis.System.Extensions.Copy;
 using Metozis.System.Generators.EntityGeneration;
+using Metozis.System.Generators.Meta;
 using Metozis.System.Generators.StellarGeneration;
 using Metozis.System.Meta.Templates;
-using Metozis.System.IO;
 using Metozis.System.Meta;
 using Metozis.System.Meta.Movement;
 using Metozis.System.Meta.Templates.VFX;
-using Metozis.System.Physics.Movement;
-using Metozis.System.Reactive;
-using Metozis.System.Registry;
 using Metozis.System.Shapes;
-using Newtonsoft.Json;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -31,11 +29,12 @@ namespace Metozis.System.Management
         public PlanetTemplate testPlanet;
         [BoxGroup("Debug")] 
         public AsteroidBeltTemplate testAsteroids;
-        
+        [BoxGroup("Debug")] 
+        public SystemMetaGenerationSettings testSystemMetaGeneration;
 
         partial void Debug()
         {
-            //Galaxies.Add(ManagersRoot.Get<SpawnManager>().GenerateGalaxy(new Vector3(10, 10, 10), testGalaxy));
+            Galaxies.Add(ManagersRoot.Get<SpawnManager>().GenerateGalaxy(new Vector3(10, 10, 10), testGalaxy));
             var settings = new ShapeMovementController();
             settings.Center.Value = transform;
             settings.ShapeType = new SerializableSystemType(typeof(OrbitalEllipse));
@@ -163,7 +162,6 @@ namespace Metozis.System.Management
                 PathToPrefab = "Planet",
             };
 
-
             var starOptions = new StarGenerationOptions
             {
                 Name = "Some Star",
@@ -276,12 +274,14 @@ namespace Metozis.System.Management
                     starOptions3
                 }
             };
-            
-            
-            
+
             //var json = Serializer.SerializeObject(systemOptions);
             //OutputUtils.WriteFile(Application.dataPath + "/Tests/Generation/test.json", json);
-            var system = ManagersRoot.Get<SpawnManager>().GenerateSystem(new Vector3(5,5, 5), systemOptions);
+
+            //var mscriptReader = new MScriptReader();
+            //mscriptReader.Read(Application.dataPath + "/Metozis/Scripting/MScript/Examples/example2.mscript");
+            var generator = new SystemMetaGenerator();
+            var system = ManagersRoot.Get<SpawnManager>().GenerateSystem(new Vector3(5,5, 5), generator.GenerateMeta(testSystemMetaGeneration) as StellarSystemGenerationOptions);
         }
     }
 }

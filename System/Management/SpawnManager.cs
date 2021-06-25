@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 
 namespace Metozis.System.Management
 {
-    public class SpawnManager : SerializedMonoBehaviour
+    public sealed class SpawnManager : SerializedMonoBehaviour
     {
         private readonly Dictionary<Type, EntityGenerator> generators = new Dictionary<Type, EntityGenerator>
         {
@@ -106,6 +106,11 @@ namespace Metozis.System.Management
             var planet = Generate<Planet>(options);
             planet.transform.position = pos;
             return planet;
+        }
+
+        public void RegisterGenerator<T>(Type entityType) where T : EntityGenerator, new()
+        {
+            generators[entityType] = new T();
         }
     }
 }

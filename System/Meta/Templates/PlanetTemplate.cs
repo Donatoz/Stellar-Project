@@ -17,10 +17,6 @@ namespace Metozis.System.Meta.Templates
         public float BaseHabitability;
         [BoxGroup("Meta parameters")]
         public Vector3 MinimumSize = Vector3.one;
-        [MinMaxSlider(0, 60)]
-        [Tooltip("Possible spawn distance from system root (AU).")]
-        [BoxGroup("Meta parameters")]
-        public Vector2 SpawnDistance;
 
         #region Shader
 
@@ -86,6 +82,13 @@ namespace Metozis.System.Meta.Templates
         [Range(0, 10)]
         [BoxGroup("Shader settings/Clouds")]
         public float CloudsShadowSharpness;
+        [BoxGroup("Shader settings/Clouds")]
+        public Texture2D CloudDistortionTexture;
+        [BoxGroup("Shader settings/Clouds")]
+        public float CloudDistortionSpeed;
+        [Range(0, 1)]
+        [BoxGroup("Shader settings/Clouds")]
+        public float CloudDistortionAmount;
         
         [ColorUsage(true, true)]
         [BoxGroup("Shader settings/Cities")]
@@ -93,6 +96,16 @@ namespace Metozis.System.Meta.Templates
         [Range(1, 20)]
         [BoxGroup("Shader settings/Cities")]
         public float CitiesDetails;
+        [BoxGroup("Shader settings/Cities")]
+        public Vector2 CitiesAlphaMinMax;
+        [BoxGroup("Shader settings/Cities")]
+        public Vector2 CitiesAlphaTiling;
+        [BoxGroup("Shader settings/Cities")]
+        public Texture2D CitiesMask;
+        [BoxGroup("Shader settings/Cities")]
+        public Vector2 CitiesMaskTiling;
+        [BoxGroup("Shader settings/Cities")]
+        public Vector2 CitiesMaskMinMax;
         
         [BoxGroup("Shader settings/Water")]
         public Texture2D WaterMask;
@@ -101,6 +114,42 @@ namespace Metozis.System.Meta.Templates
         [Range(0, 1)] 
         [BoxGroup("Shader settings/Water")]
         public float WaterSpecularIntensity;
+        
+        [BoxGroup("Shader settings/Magma")]
+        public Texture2D MagmaTexture;
+        [BoxGroup("Shader settings/Magma")]
+        public Texture2D MagmaDistortion;
+        [BoxGroup("Shader settings/Magma")]
+        public Vector2 MagmaDistortionSpeed;
+        [BoxGroup("Shader settings/Magma")]
+        [Range(0,1)]
+        public float MagmaDistortionAmount;
+        [BoxGroup("Shader settings/Magma")]
+        public Texture2D MagmaMask;
+        [BoxGroup("Shader settings/Magma")]
+        public Vector2 MagmaMaskMinMax;
+        [BoxGroup("Shader settings/Magma")]
+        public Vector2 MagmaMaskTiling;
+        [BoxGroup("Shader settings/Magma")]
+        [ColorUsage(true, true)]
+        public Color MagmaColor;
+        [BoxGroup("Shader settings/Magma")]
+        public Vector2 MagmaTiling;
+        [BoxGroup("Shader settings/Magma")]
+        [ColorUsage(true, true)]
+        public Color MagmaBgColor;
+        
+        [BoxGroup("Shader settings/Dissolve")]
+        public float DissolveNoiseScale;
+        [BoxGroup("Shader settings/Dissolve")]
+        public float DissolveNoiseStrength;
+        [BoxGroup("Shader settings/Dissolve")]
+        public float DissolveEdgeWidth;
+        [BoxGroup("Shader settings/Dissolve")]
+        [ColorUsage(true, true)]
+        public Color DissolveColor;
+        [BoxGroup("Shader settings/Dissolve")]
+        public float DissolveProgress;
 
         [BoxGroup("Atmosphere shader settings")]
         [ColorUsage(true, true)]
@@ -148,7 +197,6 @@ namespace Metozis.System.Meta.Templates
 
         #endregion
         
-
         public static PlanetTemplate GetRandomFromPreferences(Func<PlanetTemplate, bool> filter = null)
         {
             return filter == null 

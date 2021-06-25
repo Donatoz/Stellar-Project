@@ -1,4 +1,5 @@
-﻿using Metozis.System.Entities;
+﻿using System;
+using Metozis.System.Entities;
 using Metozis.System.Management;
 using Metozis.System.Meta;
 using Metozis.System.Meta.Movement;
@@ -17,6 +18,7 @@ namespace Metozis.System.Shapes
         
         public override void Recalculate()
         {
+            Debug.Log(Arguments);
             var orbitFraction = 1f / Arguments.Segments;
             points = new Vector3[Arguments.Segments + 1];
             for (int i = 0; i < Arguments.Segments; i++)
@@ -89,6 +91,14 @@ namespace Metozis.System.Shapes
             var y = distance * (sinI * sinAOPPlusA);
             
             return Center.Value.position + new Vector3(x * Arguments.AxisTransform.x, y * Arguments.AxisTransform.y, z * Arguments.AxisTransform.z);
+        }
+
+        private void Start()
+        {
+            if (Center.Value == null)
+            {
+                Center.Value = transform;
+            }
         }
 
         public override void SetUp(ShapeSettings settings)

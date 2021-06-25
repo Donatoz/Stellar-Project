@@ -85,7 +85,7 @@ namespace Metozis.System.Entities
         /// <returns></returns>
         public T GetModule<T>() where T : Module
         {
-            return (T)modulesCache[typeof(T)];
+            return modulesCache.ContainsKey(typeof(T)) ? (T)modulesCache[typeof(T)] : null;
         }
     }
 }

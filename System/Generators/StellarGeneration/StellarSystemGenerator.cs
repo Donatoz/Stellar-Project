@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Metozis.System.Entities;
 using Metozis.System.Extensions;
@@ -20,6 +21,12 @@ namespace Metozis.System.Generators.StellarGeneration
     public class StellarSystemGenerator : EntityGenerator
     {
         protected override string TemplateName => "System";
+        
+        private struct MovementConfigurator
+        {
+            public Func<float> SemiMajorAxis;
+        }
+        
         public override Entity Generate(GenerationOptions options, IGeneratorPostprocessor postprocessor = null)
         {
             if (!Validate<StellarSystemGenerationOptions>(options)) return null;
@@ -28,82 +35,77 @@ namespace Metozis.System.Generators.StellarGeneration
             // Stage 1 : Generate system root
             
             var rootTransform = new GameObject(options.Name).transform;
+            var systemRoot = new GameObject("Root");
+            systemRoot.transform.parent = rootTransform;
+            var membersRoot = new GameObject("Members");
+            membersRoot.transform.parent = rootTransform;
             var effectsRoot = new GameObject("Effects");
             effectsRoot.transform.parent = rootTransform;
             var system = ManagersRoot.Get<SpawnManager>()
                 .InstantiateObject(template, Vector3.zero, Quaternion.identity).GetComponent<StellarSystem>();
-            var root = GenerateRoot(genOptions);
-            system.Root = root;
-            system.Meta = genOptions;
-
-            SetUpRootGravity(root.ToArray(), rootTransform, genOptions, out var rootSize);
+            var (rootObjects, membersObjects) = GenerateObjects(genOptions, systemRoot.transform, membersRoot.transform);
             
-            // Stage 2 : Generate members
+            // Stage 2 : Generate root objects
 
-            var mainMembers = new List<StellarObject>();
-            var membersRoot = new GameObject($"{options.Name} Members");
-            membersRoot.transform.parent = rootTransform;
+            system.Root = rootObjects;
+            
+            // Stage 3 : Generate members
 
-            foreach (var member in genOptions.Members)
-            {
-                GenerateMember(member, ref mainMembers, membersRoot.transform, genOptions);
-            }
+            system.Members = membersObjects;
 
-            var allMembers = new List<StellarObject>();
-
-            foreach (var member in mainMembers)
-            {
-                SetUpCommonGravity(member, membersRoot.transform, genOptions, ref allMembers, rootSize);
-            }
-            
-            var lightSource = new GameObject("System light");
-            lightSource.transform.parent = rootTransform;
-            
-            
-            SetUpLight(allMembers, lightSource);
-            
-            system.Members = allMembers;
             return system;
         }
-
-        private List<StellarObject> GenerateRoot(StellarSystemGenerationOptions options)
+        
+        /// <summary>
+        /// Generate 2 lists of system objects ( 1st list - root, 2nd list - members )
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        private (List<StellarObject>, List<StellarObject>) GenerateObjects(
+            StellarSystemGenerationOptions options,
+            Transform systemRoot,
+            Transform membersRoot)
         {
-            var generatedObjects = new List<StellarObject>();
+            var generatedRoot = new List<StellarObject>();
             for (var i = 0; i < options.RootSystem.Count; i++)
             {
-                var created = GenerateReproducibleStellarObject(options.RootSystem[i] as StellarBodyGenerationOptions);
-                generatedObjects.Add(created);
+                var created = GenerateReproducibleStellarObject(options.RootSystem[i], systemRoot);
+
+                if (created.GetModule<MovementModule>() != null)
+                {
+                    var movementShape = created.GetModule<MovementModule>().Settings.Value.Arguments
+                        .As<ShapeSettings>();
+                    movementShape.EvaluationProgress = (i + 1) / (float) options.RootSystem.Count;
+                    
+                    ConfigureMovement(created);
+                }
+
+                generatedRoot.Add(created);
             }
 
-            return generatedObjects;
-        }
-
-        private void GenerateMember(StellarBodyGenerationOptions options, 
-            ref List<StellarObject> rootObjects, 
-            Transform root,
-            StellarSystemGenerationOptions sysOptions)
-        {
-            var generated = GenerateReproducibleStellarObject(options);
-            Transform transform;
-            var childTransform = (transform = root.transform).Find("Children");
-            generated.transform.parent = childTransform == null ? transform : childTransform;
-            if (sysOptions.Members.Contains(options))
+            var generatedMembers = new List<StellarObject>();
+            for (var i = 0; i < options.Members.Count; i++)
             {
-                rootObjects.Add(generated);
+                var created = GenerateReproducibleStellarObject(options.Members[i], membersRoot);
+                generatedRoot.Add(created);
             }
-            foreach (var child in options.Children)
-            {
-                GenerateMember(child, ref rootObjects, generated.transform, sysOptions);
-            }
-        }
 
-        private StellarObject GenerateReproducibleStellarObject(StellarBodyGenerationOptions options)
+            return (generatedRoot, generatedMembers);
+        }
+        
+        /// <summary>
+        /// Generate a stellar object (which can have movement module) with all it's children (recursively).
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        private StellarObject GenerateReproducibleStellarObject(StellarBodyGenerationOptions options, Transform parent)
         {
             var path = options.PathToPrefab;
             var objTemplate = ManagersRoot.Get<SpawnManager>().LoadResource<GameObject>($"Templates/{path}");
             if (objTemplate == null)
             {
-                Debug.Log($"Unable to load template in [{path}]");
+                Debug.LogWarning($"Unable to load template in [{path}]");
                 return null;
             }
 
@@ -111,16 +113,43 @@ namespace Metozis.System.Generators.StellarGeneration
 
             if (repr == null)
             {
-                Debug.Log($"Generated entity [{path}] is not reproducible");
+                Debug.LogWarning($"Generated entity [{path}] is not reproducible");
                 return null;
             }
-            
             var type = repr.GetGeneratorType();
+            
             var obj = (StellarObject) ManagersRoot.Get<SpawnManager>().Generate(type, options);
             var chilrenRoot = new GameObject("Children");
             chilrenRoot.transform.parent = obj.transform;
+            obj.transform.parent = parent;
+
+            if (obj.Meta.MovementSettings != null)
+            {
+                obj.AddModule(SetUpMovement(obj, parent));
+            }
+
+            foreach (var child in options.Children)
+            {
+                GenerateReproducibleStellarObject(child, chilrenRoot.transform);
+            }
+            
             return obj;
         }
+        
+        private MovementModule SetUpMovement(StellarObject o, Transform center)
+        {
+            var movement = o.AddModule(new MovementModule(o)) as MovementModule;
+            movement.Settings.Value = o.Meta.MovementSettings;
+            movement.Settings.Value.SetCenter(center);
+            return movement;
+        }
+
+        private void ConfigureMovement(StellarObject o)
+        {
+            var movementShape = o.GetModule<MovementModule>().Settings.Value.Arguments.As<OrbitalEllipseSettings>();
+        }
+        
+        /*
 
         private void SetUpRootGravity(StellarObject[] rootObjects, 
             Transform systemRoot, 
@@ -150,11 +179,13 @@ namespace Metozis.System.Generators.StellarGeneration
                     var settings = (ShapeSettings) movement.Settings.Value.Arguments;
                     settings.EvaluationProgress = progress;
                     settings.AdditionalVisualRadius = 0.1f * i;
+                    movement.Settings.Value.ChangePathVisual(0, default);
+                    currentMaxSize = Mathf.Max(actual[i].Radius.Value, currentMaxSize);
                 }
                 else
                 {
-                    rootSize += actual[i].Radius.Value +
-                                ((ShapeSettings) actual[i].Meta.MovementSettings.Arguments).AxisTransform.x;
+                    var diff = ((ShapeSettings) actual[i].Meta.MovementSettings.Arguments).AxisTransform.x - rootSize;
+                    rootSize += actual[i].Radius.Value + diff;
                 }
 
                 foreach (Transform effect in actual[i].transform.Find("WorldEffects"))
@@ -163,7 +194,6 @@ namespace Metozis.System.Generators.StellarGeneration
                     effect.transform.localPosition = Vector3.zero;
                 }
 
-                currentMaxSize = Mathf.Max(actual[i].Radius.Value, currentMaxSize);
                 actual[i].transform.parent = systemRoot;
             }
 
@@ -189,14 +219,6 @@ namespace Metozis.System.Generators.StellarGeneration
             rootBorder.transform.parent = systemRoot;
             rootBorder.Renderer.Width.Value = 0.1f;
             rootBorder.Renderer.Color.Value = ManagersRoot.Get<Preferences>().RootBorderColor;
-        }
-
-        private MovementModule SetUpMovement(StellarObject o, Transform center)
-        {
-            var movement = o.AddModule(new MovementModule(o)) as MovementModule;
-            movement.Settings.Value = o.Meta.MovementSettings;
-            movement.Settings.Value.SetCenter(center);
-            return movement;
         }
 
         private void SetUpCommonGravity(StellarObject obj, 
@@ -227,5 +249,6 @@ namespace Metozis.System.Generators.StellarGeneration
         {
             ShapesExtensions.ForEach(members.OfType<ILightReceiver>(), m => m.SetLightPoint(light));
         }
+        */
     }
 }
